@@ -1,0 +1,353 @@
+{
+  "name": "Nazare Wave Alert",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -32
+      ],
+      "id": "67e56216-fba9-4b91-92a0-12ad5cabb4e6",
+      "name": "Start Manually"
+    },
+    {
+      "parameters": {
+        "url": "https://marine-api.open-meteo.com/v1/marine",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "latitude",
+              "value": "39.6"
+            },
+            {
+              "name": "longitude",
+              "value": "-9.6"
+            },
+            {
+              "name": "hourly",
+              "value": "swell_wave_height,swell_wave_period,swell_wave_direction"
+            },
+            {
+              "name": "forecast_days",
+              "value": "7"
+            },
+            {
+              "name": "timezone",
+              "value": "Europe/Madrid"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        -128
+      ],
+      "id": "732c7dad-615e-4c76-a7b6-2c0491f9436f",
+      "name": "Get Swell Forecast"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "hourly.time, hourly.swell_wave_height, hourly.swell_wave_period, hourly.swell_wave_direction",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        -128
+      ],
+      "id": "52bef0f4-4a69-46d2-9b0e-e3bfccdd00b4",
+      "name": "Split Forecast Hours"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        896,
+        -128
+      ],
+      "id": "9ee8d5db-66fc-481a-830c-fae432d3406c",
+      "name": "Keep First Giant Hour"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.value }}",
+        "text": "=⚠️ Get Ready! ⚠️\nIt looks like there are going to be some giant waves at Nazaré 🌊🌊🌊\n\nFirst hour that meets the rule: {{ $json['hourly.time'] }}. Swell: {{ $json['hourly.swell_wave_height'] }} m, period: {{ $json['hourly.swell_wave_period'] }} s, direction: {{ $json['hourly.swell_wave_direction'] }} degrees.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1568,
+        -128
+      ],
+      "id": "e6f6dc1a-c63b-4cf4-8565-437a25be3605",
+      "name": "Send Wave Alert",
+      "webhookId": "a0fba968-c424-4c9c-a7be-d16858c7610b",
+      "credentials": {
+        "telegramApi": {
+          "id": "Mys2nlEfvAuEsuRK",
+          "name": "Telegram - Nazare Wave Alert"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "vupTjgQT37Uo7vuv",
+          "mode": "list",
+          "cachedResultName": "TelegramIds",
+          "cachedResultUrl": "/projects/ZiRZk4hHlqiD6MtC/datatables/vupTjgQT37Uo7vuv"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "name",
+              "keyValue": "telegram_Id"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1136,
+        -272
+      ],
+      "id": "6d9d3eee-f439-4186-b10d-e61a836e3113",
+      "name": "Get Telegram Chat Id",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1344,
+        -128
+      ],
+      "id": "a5b4f4c1-17d4-4bcf-9e6f-04c6260b7482",
+      "name": "Combine Hour and Chat Id"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        -224
+      ],
+      "id": "ecb1eaf3-8495-4c4e-87d3-2dc7b6ea9d7a",
+      "name": "Start Every Morning"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "2934954a-e703-4524-9bed-456c69c5ac7a",
+              "leftValue": "={{ $json['hourly.swell_wave_height'] }}",
+              "rightValue": 6,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "6f6bb0a1-d972-42ce-8030-4ab9eb020784",
+              "leftValue": "={{ $json['hourly.swell_wave_period'] }}",
+              "rightValue": 15,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "b2ced24f-4c9f-4d1a-adef-ac5a990f10a9",
+              "leftValue": "={{ $json['hourly.swell_wave_direction'] }}",
+              "rightValue": 270,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "54ae46da-1daf-4247-808c-9f562da71772",
+              "leftValue": "={{ $json['hourly.swell_wave_direction'] }}",
+              "rightValue": 340,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.4,
+      "position": [
+        672,
+        -128
+      ],
+      "id": "97e84e7e-53ca-4e03-b3bf-f6a57863194d",
+      "name": "Keep Giant Wave Hours"
+    },
+    {
+      "parameters": {
+        "content": "## Nazare Wave Alert\n\nWarns me when giant waves are forecast at Nazaré.\n\n1. Every morning at 8:00 it asks Open-Meteo for the next seven days of swell at a point in the open sea in front of Nazaré.\n2. It splits the forecast into one item per hour.\n3. It keeps only the hours that meet the rule: swell of 6 m or more, period of 15 s or more, coming from 270 to 340 degrees (west to north-west).\n4. It keeps the first of those hours.\n5. It looks up my Telegram chat number in a table and sends the alert.\n\nIf no hour meets the rule, nothing is sent. If any step fails, nothing is sent and the error workflow tells me by email and Telegram. While the swell stays in the forecast, the alert repeats every morning.\n\nIt is a forecast, not a certainty. The Nazaré canyon multiplies the height of the swell, so the rule uses the swell in the open sea, not the wave at the beach.\n\nData: Open-Meteo Marine Weather.\nGitHub: https://github.com/Prolegomeno/nazare-wave-alert",
+        "height": 440,
+        "width": 560
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -780
+      ],
+      "id": "de1a248c-2547-46e0-81b9-2fb7ffe130ad",
+      "name": "About This Workflow"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start Manually": {
+      "main": [
+        [
+          {
+            "node": "Get Swell Forecast",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Swell Forecast": {
+      "main": [
+        [
+          {
+            "node": "Split Forecast Hours",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Forecast Hours": {
+      "main": [
+        [
+          {
+            "node": "Keep Giant Wave Hours",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep First Giant Hour": {
+      "main": [
+        [
+          {
+            "node": "Get Telegram Chat Id",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Combine Hour and Chat Id",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get Telegram Chat Id": {
+      "main": [
+        [
+          {
+            "node": "Combine Hour and Chat Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Hour and Chat Id": {
+      "main": [
+        [
+          {
+            "node": "Send Wave Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Every Morning": {
+      "main": [
+        [
+          {
+            "node": "Get Swell Forecast",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep Giant Wave Hours": {
+      "main": [
+        [
+          {
+            "node": "Keep First Giant Hour",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "availableInMCP": false,
+    "redactCallerExecutions": true
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "tags": []
+}
