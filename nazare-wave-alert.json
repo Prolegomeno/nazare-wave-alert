@@ -226,17 +226,18 @@
     {
       "parameters": {
         "content": "## Nazare Wave Alert\n\nWarns me when giant waves are forecast at Nazaré.\n\n1. Every morning at 8:00 it asks Open-Meteo for the next seven days of swell at a point in the open sea in front of Nazaré.\n2. It splits the forecast into one item per hour.\n3. It keeps only the hours that meet the rule: swell of 6 m or more, period of 15 s or more, coming from 270 to 340 degrees (west to north-west).\n4. It keeps the first of those hours.\n5. It looks up my Telegram chat number in a table and sends the alert.\n\nIf no hour meets the rule, nothing is sent. If any step fails, nothing is sent and the error workflow tells me by email and Telegram. While the swell stays in the forecast, the alert repeats every morning.\n\nIt is a forecast, not a certainty. The Nazaré canyon multiplies the height of the swell, so the rule uses the swell in the open sea, not the wave at the beach.\n\nData: Open-Meteo Marine Weather.\nGitHub: https://github.com/Prolegomeno/nazare-wave-alert",
-        "height": 440,
-        "width": 560
+        "height": 304,
+        "width": 1360,
+        "color": "#296C75"
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -48,
-        -780
+        -32,
+        -688
       ],
-      "id": "de1a248c-2547-46e0-81b9-2fb7ffe130ad",
-      "name": "About This Workflow"
+      "id": "5ec22a3e-f88a-49bc-9217-93d5ac218a41",
+      "name": "Sticky Note"
     }
   ],
   "pinData": {},
